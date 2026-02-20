@@ -1,0 +1,24 @@
+System wide for future user:
+bun add -g degit
+
+Launch a project quickly:
+
+PROJECT=domain.com bun x sv create $PROJECT \
+    --template minimal \
+    --types ts \
+    --add "tailwindcss=plugins:typography" eslint prettier mdsvex \
+    --install bun
+
+
+
+Do you need a database?
+
+bun x sv add drizzle="database:postgresql+client:postgres.js+docker:yes" --install bun
+bun run db:start
+
+
+degit username/repo/routes ://$PROJECT
+degit username/repo/lib ://$PROJECT
+
+# Copy specific directories into the new project path.
+degit git@github.com:premoweb/wherepigsnowfly.com/src/routes ://$PROJECT

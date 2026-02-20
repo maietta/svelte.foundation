@@ -1,0 +1,12 @@
+{
+	"servers": {
+		"svelte": {
+			"command": "bun",
+			"args": [
+				"x",
+				"-y",
+				"@sveltejs/mcp"
+			]
+		}
+	}
+}
