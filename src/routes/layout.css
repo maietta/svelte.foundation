@@ -1,3 +1,11 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+@plugin 'daisyui' {
+	themes: corporate --default;
+}
+
+@theme {
+	--color-wireframe-bg: #f0f0f0;
+	--color-wireframe-border: #666;
+}

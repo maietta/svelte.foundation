@@ -1,4 +1,4 @@
-FROM oven/bun:1 AS base
+FROM oven/bun:latest AS base
 WORKDIR /app
 
 FROM base AS deps
@@ -11,9 +11,12 @@ COPY . .
 RUN bun run build
 
 FROM base AS runner
+
 ENV HOST=0.0.0.0
 ENV PORT=3000
+
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/package.json .
+
 EXPOSE 3000
 CMD ["bun", "run", "build"]

@@ -95,3 +95,26 @@ Build the Docker image:
 ```sh
 docker build -t my-site .
 ```
+
+## Environment Variables
+
+Copy `.env.production` to `.env` and configure the following:
+
+```env
+# SendGrid Configuration (required for contact form emails)
+SENDGRID_API_KEY=your_sendgrid_api_key
+SENDGRID_FROM_EMAIL=your_verified_sender_email
+SENDGRID_TO_EMAIL=recipient_email_address
+
+# Altcha Configuration (required for contact form spam protection)
+# Generate your API key at https://altcha.org/
+ALTCHA_API_KEY=your_altcha_api_key
+```
+
+### Altcha Setup
+
+1. Visit https://altcha.org/ to create an account
+2. Generate an API key from your Altcha dashboard
+3. Add the key to your `.env` file
+
+Without `ALTCHA_API_KEY`, the form will still work but with basic challenge-response verification only.

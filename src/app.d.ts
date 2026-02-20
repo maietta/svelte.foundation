@@ -2,9 +2,16 @@
 // for information about these interfaces
 declare global {
 	namespace App {
+		interface PageData {
+			url?: {
+				hostname: string;
+				protocol: string;
+				port: string;
+				href: string;
+			};
+		}
 		// interface Error {}
 		// interface Locals {}
-		// interface PageData {}
 		// interface PageState {}
 		// interface Platform {}
 	}
