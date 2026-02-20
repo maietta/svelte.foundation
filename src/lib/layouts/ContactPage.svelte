@@ -5,9 +5,11 @@
 	interface Props {
 		showInfo?: boolean;
 		showMap?: boolean;
+		form?: Record<string, unknown>;
+		data?: Record<string, unknown>;
 	}
 
-	let { showInfo = true, showMap = false }: Props = $props();
+	let { showInfo = true, showMap = false, form, data }: Props = $props();
 </script>
 
 <div class="mx-auto w-full max-w-7xl px-6 py-16">
@@ -78,7 +80,7 @@
 		<!-- Right: contact form -->
 		<div class="flex items-start">
 			<div class="w-full">
-				<ContactForm />
+				<ContactForm {form} {data} />
 			</div>
 		</div>
 

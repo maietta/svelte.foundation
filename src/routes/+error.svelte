@@ -9,7 +9,7 @@
 <div class="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
 	<p class="text-9xl font-black opacity-10 select-none">{$page.status}</p>
 
-	<h1 class="mt-[-2rem] text-3xl font-bold text-base-content">
+	<h1 class="-mt-8 text-3xl font-bold text-base-content">
 		{#if $page.status === 404}
 			Page not found
 		{:else}

@@ -1,5 +1,8 @@
 <script lang="ts">
 	import ContactPage from '$lib/layouts/ContactPage.svelte';
+	import type { PageData, ActionData } from './$types';
+
+	let { data, form }: { data: PageData; form: ActionData } = $props();
 </script>
 
 <svelte:head>
@@ -7,4 +10,4 @@
 	<meta name="description" content="Get in touch with us" />
 </svelte:head>
 
-<ContactPage />
+<ContactPage {data} form={form ?? undefined} />

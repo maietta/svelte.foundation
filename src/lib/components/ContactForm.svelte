@@ -1,7 +1,12 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 	import { businessInfo } from '$lib/stores/business';
+
+	// Import on client only — the widget is a custom element that needs window.customElements
+	if (browser) {
+		import('altcha');
+	}
 
 	interface FormProps {
 		success?: boolean;
@@ -16,36 +21,31 @@
 		data?: { altchaChallenge?: object };
 	}
 
-	let { form, data }: Props = $props();
+	let { data }: Props = $props();
 
-	let formReady = $state(false);
-	let altchaWidget: any = $state(null);
+	let altchaEl: HTMLElement | null = $state(null);
 	let submitting = $state(false);
 
-	onMount(async () => {
-		if (data?.altchaChallenge) {
-			await import('altcha/altcha.css');
-			const AltchaModule = await import('altcha');
-			const Altcha = (AltchaModule as any).default || AltchaModule;
+	// Local result — driven by the enhance callback, no prop drilling needed
+	let result = $state<{ success: boolean; error?: string } | null>(null);
 
-			const widget = document.getElementById('altcha-widget') as HTMLElement;
-			if (widget) {
-				altchaWidget = new Altcha({
-					challengejson: JSON.stringify(data.altchaChallenge),
-					auto: 'onsubmit',
-					hideFooter: true
-				});
-				widget.appendChild(altchaWidget);
-			}
-		}
+	// Controlled field state
+	let nameVal = $state('');
+	let emailVal = $state('');
+	let messageVal = $state('');
 
-		formReady = true;
-	});
+	function fillTestData() {
+		nameVal = 'John Doe';
+		emailVal = 'nick@premoweb.com';
+		messageVal = 'This is a test message sent to verify the contact form is working correctly.';
+	}
 
-	function handleReset() {
-		if (altchaWidget) {
-			altchaWidget.reset();
-		}
+	function resetForm() {
+		nameVal = '';
+		emailVal = '';
+		messageVal = '';
+		result = null;
+		(altchaEl as any)?.reset?.();
 	}
 </script>
 
@@ -54,11 +54,11 @@
 		<h2 class="card-title justify-center text-2xl">Contact Us</h2>
 		<p class="mb-4 text-center text-base-content/70">Get in touch with {$businessInfo.name}</p>
 
-		{#if form?.success}
-			<div class="alert alert-success">
+		{#if result?.success}
+			<div class="alert alert-success flex-col items-start gap-2 py-6">
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
-					class="h-6 w-6 shrink-0"
+					class="h-8 w-8 shrink-0"
 					fill="none"
 					viewBox="0 0 24 24"
 					stroke="currentColor"
@@ -71,17 +71,15 @@
 					/>
 				</svg>
 				<div>
-					<h3 class="font-bold">Thank you for your message!</h3>
-					<p class="text-sm">We'll get back to you soon.</p>
+					<h3 class="font-bold text-lg">Message sent!</h3>
+					<p class="mt-1 text-sm">Thanks for reaching out — we'll get back to you shortly.</p>
 				</div>
-			</div>
-		{:else if !formReady}
-			<div class="flex flex-col items-center py-8">
-				<span class="loading loading-lg loading-spinner"></span>
-				<p class="mt-4">Loading security verification...</p>
+				<button class="btn btn-ghost btn-sm mt-2" onclick={resetForm}>
+					Send another message
+				</button>
 			</div>
 		{:else}
-			{#if form?.error}
+			{#if result?.error}
 				<div class="alert alert-error">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -98,8 +96,8 @@
 						/>
 					</svg>
 					<div>
-						<h3 class="font-bold">Error!</h3>
-						<p class="text-sm">{form.error}</p>
+						<h3 class="font-bold">Couldn't send your message</h3>
+						<p class="text-sm">{result.error ?? 'Something went wrong. Please try again.'}</p>
 					</div>
 				</div>
 			{/if}
@@ -108,11 +106,20 @@
 				method="POST"
 				use:enhance={() => {
 					submitting = true;
-					return async ({ update }) => {
-						await update();
+					result = null;
+					return async ({ result: actionResult }) => {
 						submitting = false;
-						if (form?.success) {
-							handleReset();
+						if (actionResult.type === 'success') {
+							result = { success: true };
+						} else if (actionResult.type === 'failure') {
+							const d = actionResult.data as FormProps | undefined;
+							result = { success: false, error: d?.error };
+							if (d?.name !== undefined) nameVal = d.name ?? '';
+							if (d?.email !== undefined) emailVal = d.email ?? '';
+							if (d?.message !== undefined) messageVal = d.message ?? '';
+						(altchaEl as any)?.reset?.();
+						} else {
+							result = { success: false, error: 'An unexpected error occurred. Please try again.' };
 						}
 					};
 				}}
@@ -123,7 +130,7 @@
 						id="name"
 						name="name"
 						type="text"
-						value={form?.name ?? ''}
+						bind:value={nameVal}
 						class="input-bordered input w-full"
 						required
 						placeholder="Your full name"
@@ -136,7 +143,7 @@
 						id="email"
 						name="email"
 						type="email"
-						value={form?.email ?? ''}
+						bind:value={emailVal}
 						class="input-bordered input w-full"
 						required
 						placeholder="your.email@example.com"
@@ -162,9 +169,20 @@
 						rows="4"
 						class="textarea-bordered textarea w-full"
 						required
-						placeholder="Tell us how we can help...">{form?.message ?? ''}</textarea
-					>
+						placeholder="Tell us how we can help..."
+						bind:value={messageVal}
+					></textarea>
 				</fieldset>
+
+				<div class="mt-4">
+					<altcha-widget
+						bind:this={altchaEl}
+						challengejson={data?.altchaChallenge ? JSON.stringify(data.altchaChallenge) : undefined}
+						name="altcha-response"
+						auto="onsubmit"
+						hidefooter={true}
+					></altcha-widget>
+				</div>
 
 				<button type="submit" class="btn mt-4 w-full btn-primary" disabled={submitting}>
 					{#if submitting}
@@ -173,6 +191,14 @@
 					{:else}
 						Send Message
 					{/if}
+				</button>
+
+				<button
+					type="button"
+					onclick={fillTestData}
+					class="btn btn-ghost btn-sm mt-2 w-full opacity-50 hover:opacity-100"
+				>
+					Fill test data
 				</button>
 			</form>
 		{/if}

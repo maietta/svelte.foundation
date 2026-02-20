@@ -30,13 +30,15 @@ export const actions: Actions = {
 		const message = formData.get('message')?.toString() || '';
 		const altchaResponse = formData.get('altcha-response')?.toString() || '';
 
+		const store = get(businessInfo);
+
 		if (!name || !email || !message) {
-			return fail(400, { error: 'Please fill in all required fields', name, email, message });
+			return fail(400, { error: 'Please fill in all required fields.', name, email, message });
 		}
 
 		if (!altchaResponse) {
 			return fail(400, {
-				error: 'Please complete the security verification',
+				error: 'Please complete the security check before submitting.',
 				name,
 				email,
 				message
@@ -44,12 +46,11 @@ export const actions: Actions = {
 		}
 
 		try {
-			const payload = JSON.parse(altchaResponse);
-			const verified = await verifySolution(payload, ALTCHA_HMAC_KEY);
+			const verified = await verifySolution(altchaResponse, ALTCHA_HMAC_KEY);
 
 			if (!verified) {
 				return fail(400, {
-					error: 'Security verification failed. Please try again.',
+					error: 'Security check failed — please refresh the page and try again.',
 					name,
 					email,
 					message
@@ -58,7 +59,7 @@ export const actions: Actions = {
 		} catch (error) {
 			console.error('ALTCHA verification error:', error);
 			return fail(400, {
-				error: 'Security verification failed. Please try again.',
+				error: 'Security check failed — please refresh the page and try again.',
 				name,
 				email,
 				message
@@ -67,10 +68,14 @@ export const actions: Actions = {
 
 		if (!env.SENDGRID_API_KEY || !env.SENDGRID_FROM_EMAIL || !env.SENDGRID_TO_EMAIL) {
 			console.warn('SendGrid not configured. Email not sent.');
-			return { success: true };
+			return fail(500, {
+				error: `Our mail system is temporarily unavailable. Please email us directly at ${store.email}.`,
+				name,
+				email,
+				message
+			});
 		}
 
-		const store = get(businessInfo);
 		const businessName = store.name;
 		const timestamp = new Date().toLocaleString();
 
@@ -137,10 +142,20 @@ export const actions: Actions = {
 		try {
 			await sgMail.send(msgToOwner);
 			await sgMail.send(msgAutoReply);
-		} catch (error) {
+		} catch (error: any) {
 			console.error('Email send error:', error);
+
+			// Parse SendGrid ResponseError shape
+			const statusCode: number = error?.response?.statusCode ?? error?.code ?? 0;
+			let errorMessage = `We couldn't send your message. Please try again or email us at ${store.email}.`;
+			if (statusCode === 401 || statusCode === 403) {
+				errorMessage = `Our mail provider configuration needs attention. Please email us directly at ${store.email}.`;
+			} else if (statusCode === 429) {
+				errorMessage = `We're receiving a high volume of messages right now. Please try again in a few minutes.`;
+			}
+
 			return fail(500, {
-				error: 'An unexpected error occurred. Please try again later.',
+				error: errorMessage,
 				name,
 				email,
 				message
