@@ -166,17 +166,6 @@
 					>
 				</fieldset>
 
-				<fieldset class="fieldset">
-					<div
-						id="altcha-widget"
-						class="flex min-h-[80px] items-center justify-center rounded-lg border border-base-300 p-2"
-					>
-						{#if !formReady}
-							<span class="loading loading-md loading-dots"></span>
-						{/if}
-					</div>
-				</fieldset>
-
 				<button type="submit" class="btn mt-4 w-full btn-primary" disabled={submitting}>
 					{#if submitting}
 						<span class="loading loading-spinner"></span>

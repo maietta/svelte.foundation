@@ -70,16 +70,16 @@
 <style>
 	.two-column {
 		display: grid;
-		grid-template-columns: 250px 1fr;
+		grid-template-columns: 240px 1fr;
 		gap: 48px;
-		padding: 48px 24px;
-		max-width: 1200px;
+		padding: 48px 1.5rem;
+		max-width: 80rem;
 		margin: 0 auto;
 	}
 	.sidebar {
-		background: #fafafa;
-		border: 2px dashed #999;
-		border-radius: 12px;
+		background: oklch(var(--b2));
+		border: 1px solid oklch(var(--b3));
+		border-radius: 0.75rem;
 		padding: 24px;
 		height: fit-content;
 	}
@@ -92,7 +92,7 @@
 		font-weight: 600;
 		margin-bottom: 16px;
 		padding-bottom: 12px;
-		border-bottom: 1px dashed #ccc;
+		border-bottom: 1px solid oklch(var(--b3));
 	}
 	.sidebar-nav ul {
 		list-style: none;
@@ -111,11 +111,11 @@
 		transition: background 0.2s;
 	}
 	.sidebar-nav a:hover {
-		background: #e0e0e0;
+		background: oklch(var(--b3));
 	}
 	.sidebar-nav a.active {
-		background: #333;
-		color: white;
+		background: oklch(var(--p));
+		color: oklch(var(--pc));
 	}
 	.sub-nav {
 		padding-left: 20px !important;
@@ -141,7 +141,7 @@
 	.content :global(p) {
 		line-height: 1.7;
 		margin-bottom: 16px;
-		color: #444;
+		color: oklch(var(--bc) / 0.75);
 	}
 	@media (max-width: 768px) {
 		.two-column {

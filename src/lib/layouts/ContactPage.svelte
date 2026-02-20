@@ -8,131 +8,79 @@
 	}
 
 	let { showInfo = true, showMap = false }: Props = $props();
-
-	const primaryAddress = $derived($businessInfo.addresses?.[0]);
 </script>
 
-<div class="contact-page">
-	<div class="contact-info">
-		<h1>Contact Us</h1>
-		<p>Get in touch with {$businessInfo.name}</p>
+<div class="mx-auto w-full max-w-7xl px-6 py-16">
+	<div class="grid grid-cols-1 gap-16 lg:grid-cols-2">
 
-		{#if showInfo}
-			<div class="info-card">
-				{#if primaryAddress}
-					<div class="info-item">
-						<h3>Address</h3>
-						<p>
-							{primaryAddress.name}<br />
-							{primaryAddress.street}<br />
-							{primaryAddress.city}, {primaryAddress.state}
-							{primaryAddress.zip}
-						</p>
+		<!-- Left: heading + business info -->
+		<div>
+			<h1 class="text-4xl font-bold">Contact Us</h1>
+			<p class="mt-2 text-lg opacity-60">Get in touch with us.</p>
+
+			{#if showInfo}
+				<div class="mt-8 flex flex-col gap-6">
+
+					{#if $businessInfo.addresses?.length}
+						<div>
+							<h3 class="mb-2 text-xs font-semibold uppercase tracking-widest opacity-60">Locations</h3>
+							<div class="flex flex-wrap gap-6">
+								{#each $businessInfo.addresses as addr}
+									<div class="flex flex-col gap-1">
+										<span class="font-semibold">{addr.name}</span>
+										<p class="text-sm leading-relaxed opacity-80">
+											{addr.street}<br />{addr.city}, {addr.state} {addr.zip}
+										</p>
+										{#if addr.walkIns}
+											<span class="badge badge-success badge-sm mt-1">Walk-ins welcome</span>
+										{:else if addr.byAppointment}
+											<span class="badge badge-warning badge-sm mt-1">By appointment</span>
+										{/if}
+									</div>
+								{/each}
+							</div>
+						</div>
+					{/if}
+
+					<div>
+						<h3 class="mb-1 text-xs font-semibold uppercase tracking-widest opacity-60">Phone</h3>
+						<a href="tel:{$businessInfo.phone}" class="link link-hover text-base font-medium">
+							{$businessInfo.phone}
+						</a>
+						{#if $businessInfo.fax}
+							<p class="mt-1 text-sm opacity-70">Fax: {$businessInfo.fax}</p>
+						{/if}
 					</div>
-				{/if}
 
-				<div class="info-item">
-					<h3>Phone</h3>
-					<p><a href="tel:{$businessInfo.phone}">{$businessInfo.phone}</a></p>
-				</div>
+					<div>
+						<h3 class="mb-1 text-xs font-semibold uppercase tracking-widest opacity-60">Email</h3>
+						<a href="mailto:{$businessInfo.email}" class="link link-hover text-base font-medium">
+							{$businessInfo.email}
+						</a>
+					</div>
 
-				<div class="info-item">
-					<h3>Email</h3>
-					<p><a href="mailto:{$businessInfo.email}">{$businessInfo.email}</a></p>
-				</div>
+					<div>
+						<h3 class="mb-2 text-xs font-semibold uppercase tracking-widest opacity-60">Business Hours</h3>
+						<ul class="divide-y divide-base-300">
+							{#each Object.entries($businessInfo.hours) as [day, hours]}
+								<li class="flex items-center justify-between py-2 text-sm">
+									<span class="font-medium capitalize">{day}</span>
+									<span class="opacity-70">{hours.closed ? 'Closed' : `${hours.open} – ${hours.close}`}</span>
+								</li>
+							{/each}
+						</ul>
+					</div>
 
-				<div class="info-item">
-					<h3>Business Hours</h3>
-					<ul class="hours-list">
-						{#each Object.entries($businessInfo.hours) as [day, hours]}
-							<li>
-								<span class="day">{day.charAt(0).toUpperCase() + day.slice(1)}</span>
-								<span class="hours"
-									>{hours.closed ? 'Closed' : `${hours.open} - ${hours.close}`}</span
-								>
-							</li>
-						{/each}
-					</ul>
 				</div>
+			{/if}
+		</div>
+
+		<!-- Right: contact form -->
+		<div class="flex items-start">
+			<div class="w-full">
+				<ContactForm />
 			</div>
-		{/if}
-	</div>
+		</div>
 
-	<div class="contact-form-section">
-		<ContactForm />
 	</div>
 </div>
-
-<style>
-	.contact-page {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 64px;
-		padding: 64px 24px;
-		max-width: 1200px;
-		margin: 0 auto;
-	}
-	.contact-info h1 {
-		font-size: 2.5rem;
-		font-weight: bold;
-		margin-bottom: 8px;
-	}
-	.contact-info > p {
-		font-size: 1.25rem;
-		color: #666;
-		margin-bottom: 32px;
-	}
-	.info-card {
-		border: 2px dashed #999;
-		border-radius: 12px;
-		padding: 32px;
-		background: #fafafa;
-	}
-	.info-item {
-		margin-bottom: 24px;
-	}
-	.info-item:last-child {
-		margin-bottom: 0;
-	}
-	.info-item h3 {
-		font-size: 1rem;
-		font-weight: 600;
-		margin-bottom: 8px;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-		color: #666;
-	}
-	.info-item p {
-		line-height: 1.6;
-	}
-	.info-item a {
-		color: inherit;
-	}
-	.hours-list {
-		list-style: none;
-		padding: 0;
-		margin: 0;
-	}
-	.hours-list li {
-		display: flex;
-		justify-content: space-between;
-		padding: 6px 0;
-		border-bottom: 1px solid #eee;
-	}
-	.hours-list li:last-child {
-		border-bottom: none;
-	}
-	.hours-list .day {
-		font-weight: 500;
-	}
-	.hours-list .hours {
-		color: #666;
-	}
-	@media (max-width: 900px) {
-		.contact-page {
-			grid-template-columns: 1fr;
-			gap: 48px;
-			padding: 48px 24px;
-		}
-	}
-</style>

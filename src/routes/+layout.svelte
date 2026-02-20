@@ -37,7 +37,6 @@
 		flex-direction: column;
 		min-height: 100vh;
 		position: relative;
-		overflow-x: hidden;
 	}
 	main {
 		flex-grow: 1;

@@ -20,7 +20,9 @@ export interface Address {
 
 export interface BusinessInfo {
 	name: string;
+	tagline?: string;
 	phone: string;
+	fax?: string;
 	email: string;
 	hours: Record<string, BusinessHours>;
 	addresses: Address[];
@@ -29,8 +31,9 @@ export interface BusinessInfo {
 
 const defaultBusinessInfo: BusinessInfo = {
 	name: 'PremoWeb LLC',
-	phone: '+1 888-773-6693',
-	email: 'support@premoweb.com',
+	tagline: 'Professional web presence, built to grow your business.',
+	phone: '+1 888-PREMOWEB',
+	email: 'hi@premoweb.com',
 	hours: {
 		monday: { open: '9:00 AM', close: '5:00 PM' },
 		tuesday: { open: '9:00 AM', close: '5:00 PM' },
@@ -41,17 +44,29 @@ const defaultBusinessInfo: BusinessInfo = {
 		sunday: { closed: true }
 	},
 	addresses: [
-		{
+				{
 			name: 'Headquarters',
-			street: '123 Main Street',
-			city: 'San Diego',
+			street: '464-775 Main Street',
+			city: 'Janesville',
 			state: 'CA',
-			zip: '92101',
+			zip: '96114',
 			isPhysical: true,
+			isMailing: false,
+			walkIns: false,
+			byAppointment: true
+		},
+		{
+			name: 'Mailing Address',
+			street: '460-280 Whispering Pines Drive',
+			city: 'Janesville',
+			state: 'CA',
+			zip: '96114',
+			isPhysical: false,
 			isMailing: true,
-			walkIns: true,
-			byAppointment: false
+			walkIns: false,
+			byAppointment: true
 		}
+
 	],
 	timezone: 'America/Los_Angeles'
 };

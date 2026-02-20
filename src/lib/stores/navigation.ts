@@ -11,6 +11,14 @@ export interface NavItem {
 
 export const navigationItems = writable<NavItem[]>([
 	{
+		id: 'home',
+		label: 'Home',
+		href: '/',
+		showOnHeader: true,
+		showOnFooter: false,
+		showOnMobile: true
+	},
+	{
 		id: 'services',
 		label: 'Services',
 		href: '/services',
@@ -39,6 +47,14 @@ export const navigationItems = writable<NavItem[]>([
 		label: 'Contact',
 		href: '/contact',
 		showOnHeader: true,
+		showOnFooter: true,
+		showOnMobile: true
+	},
+	{
+		id: 'faq',
+		label: 'FAQ',
+		href: '/faq',
+		showOnHeader: false,
 		showOnFooter: true,
 		showOnMobile: true
 	}

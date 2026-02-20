@@ -9,3 +9,7 @@
 	--color-wireframe-bg: #f0f0f0;
 	--color-wireframe-border: #666;
 }
+
+body {
+	overflow-x: hidden;
+}
