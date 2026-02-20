@@ -1,11 +1,15 @@
 <script lang="ts">
 	import { onNavigate } from '$app/navigation';
+	import { page } from '$app/stores';
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import Header from '$lib/components/Header.svelte';
 	import Footer from '$lib/components/Footer.svelte';
+	import { businessInfo } from '$lib/stores/business';
 
 	let { children, data } = $props();
+
+	const defaultOgImage = $derived(`${$page.url.origin}/og`);
 
 	onNavigate((navigation) => {
 		if (!document.startViewTransition) return;
@@ -19,7 +23,16 @@
 	});
 </script>
 
-<svelte:head><link rel="icon" href={favicon} /></svelte:head>
+<svelte:head>
+	<link rel="icon" href={favicon} />
+	<meta property="og:type" content="website" />
+	<meta property="og:site_name" content={$businessInfo.name} />
+	<meta property="og:image" content={defaultOgImage} />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:image" content={defaultOgImage} />
+</svelte:head>
 
 <div data-theme="corporate">
 	<div class="layout-container">

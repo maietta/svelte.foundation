@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/stores';
 	import FrontPage from '$lib/layouts/FrontPage.svelte';
 	import { businessInfo } from '$lib/stores/business';
 
@@ -29,6 +30,20 @@
 	<meta
 		name="description"
 		content="Welcome to {$businessInfo.name}. We provide professional services to help your business grow."
+	/>
+	<meta property="og:url" content={$page.url.href} />
+	<meta property="og:title" content="{$businessInfo.name} - Home" />
+	<meta
+		property="og:description"
+		content={$businessInfo.tagline ?? ''}
+	/>
+	<meta
+		property="og:image"
+		content="{$page.url.origin}/og?{new URLSearchParams({ title: $businessInfo.name, description: $businessInfo.tagline ?? '' })}"
+	/>
+	<meta
+		name="twitter:image"
+		content="{$page.url.origin}/og?{new URLSearchParams({ title: $businessInfo.name, description: $businessInfo.tagline ?? '' })}"
 	/>
 </svelte:head>
 

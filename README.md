@@ -49,6 +49,7 @@ Then download and extract this template over your fresh project to get:
 - ESLint + Prettier configured
 - TypeScript support
 - mdsvex for writing blog posts in Markdown
+- [sveltekit-og](https://sveltekit-og.dev) for dynamic Open Graph image generation (no headless browser — uses Satori + Resvg/WASM)
 
 ### Deployment
 

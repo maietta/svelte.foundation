@@ -51,6 +51,14 @@ export const navigationItems = writable<NavItem[]>([
 		showOnMobile: true
 	},
 	{
+		id: 'testimonials',
+		label: 'Testimonials',
+		href: '/testimonials',
+		showOnHeader: false,
+		showOnFooter: true,
+		showOnMobile: true
+	},
+	{
 		id: 'faq',
 		label: 'FAQ',
 		href: '/faq',

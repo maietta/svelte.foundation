@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { blogPosts, type BlogPost } from '$lib/stores/blog';
+	import { page } from '$app/stores';
+	import { blogPosts, slugifyCategory, type BlogPost } from '$lib/stores/blog';
+	import Pagination from '$lib/components/Pagination.svelte';
 
 	interface Props {
 		title?: string;
@@ -9,6 +11,7 @@
 		showExcerpt?: boolean;
 		showCategories?: boolean;
 		columns?: 2 | 3;
+		perPage?: number;
 		posts?: BlogPost[];
 	}
 
@@ -20,10 +23,22 @@
 		showExcerpt = true,
 		showCategories = true,
 		columns = 2,
+		perPage = 6,
 		posts
 	}: Props = $props();
 
-	const displayPosts = $derived(posts || $blogPosts);
+	const allPosts = $derived(posts || $blogPosts);
+	const currentPage = $derived(parseInt($page.url.searchParams.get('page') || '1'));
+	const totalPages = $derived(Math.ceil(allPosts.length / perPage));
+	const displayPosts = $derived(allPosts.slice((currentPage - 1) * perPage, currentPage * perPage));
+
+	function getPageHref(p: number): string {
+		const params = new URLSearchParams($page.url.searchParams);
+		if (p === 1) params.delete('page');
+		else params.set('page', String(p));
+		const qs = params.toString();
+		return qs ? `?${qs}` : $page.url.pathname;
+	}
 
 	function formatDate(dateStr: string): string {
 		const date = new Date(dateStr);
@@ -53,10 +68,11 @@
 					{#if showCategories && post.categories}
 						<div class="post-categories">
 							{#each post.categories as category, i}
-								<span
+								<a
+									href="/blog/category/{slugifyCategory(category)}"
 									class="category-tag"
 									style={i === 0 ? `view-transition-name: blog-categories-${post.slug}` : ''}
-									>{category}</span
+									>{category}</a
 								>
 							{/each}
 						</div>
@@ -86,6 +102,8 @@
 			</article>
 		{/each}
 	</div>
+
+	<Pagination {currentPage} {totalPages} getHref={getPageHref} />
 </section>
 
 <style>
@@ -150,6 +168,11 @@
 		padding: 4px 8px;
 		background: #e0e0e0;
 		border-radius: 4px;
+		color: inherit;
+		text-decoration: none;
+	}
+	.category-tag:hover {
+		background: #c0c0c0;
 	}
 	.post-content h2 {
 		font-size: 1.25rem;
