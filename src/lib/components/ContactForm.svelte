@@ -1,12 +1,10 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { browser } from '$app/environment';
+	import { onMount } from 'svelte';
 	import { businessInfo } from '$lib/stores/business';
+	import AltchaWorker from '$lib/altcha.worker?worker';
 
-	// Import on client only — the widget is a custom element that needs window.customElements
-	if (browser) {
-		import('altcha');
-	}
+
 
 	interface FormProps {
 		success?: boolean;
@@ -23,8 +21,48 @@
 
 	let { data }: Props = $props();
 
-	let altchaEl: HTMLElement | null = $state(null);
+	let altchaPayload = $state('');
 	let submitting = $state(false);
+	let solving = $state(true);  // true while background PoW is in progress
+	let solveError = $state(false);
+
+	// Solve the PoW challenge in a Web Worker (off the main thread)
+	onMount(() => {
+		if (!data?.altchaChallenge) {
+			solving = false;
+			return;
+		}
+		const c = data.altchaChallenge as any;
+		const worker = new AltchaWorker();
+		worker.onmessage = (event: MessageEvent) => {
+			const solved = event.data;
+			if (solved) {
+				altchaPayload = btoa(JSON.stringify({
+					algorithm: c.algorithm,
+					challenge: c.challenge,
+					number: solved.number,
+					salt: c.salt,
+					signature: c.signature,
+					took: solved.took
+				}));
+			} else {
+				solveError = true;
+			}
+			solving = false;
+			worker.terminate();
+		};
+		worker.onerror = () => {
+			solveError = true;
+			solving = false;
+			worker.terminate();
+		};
+		worker.postMessage({
+			algorithm: c.algorithm,
+			challenge: c.challenge,
+			maxnumber: c.maxnumber ?? 1_000_000,
+			salt: c.salt
+		});
+	});
 
 	// Local result — driven by the enhance callback, no prop drilling needed
 	let result = $state<{ success: boolean; error?: string } | null>(null);
@@ -45,7 +83,7 @@
 		emailVal = '';
 		messageVal = '';
 		result = null;
-		(altchaEl as any)?.reset?.();
+		// altchaPayload stays — solved challenge is valid for reuse within the same page session
 	}
 </script>
 
@@ -117,7 +155,7 @@
 							if (d?.name !== undefined) nameVal = d.name ?? '';
 							if (d?.email !== undefined) emailVal = d.email ?? '';
 							if (d?.message !== undefined) messageVal = d.message ?? '';
-						(altchaEl as any)?.reset?.();
+							// keep altchaPayload — solved challenge stays valid for retry
 						} else {
 							result = { success: false, error: 'An unexpected error occurred. Please try again.' };
 						}
@@ -174,20 +212,21 @@
 					></textarea>
 				</fieldset>
 
-				<div class="mt-4">
-					<altcha-widget
-						bind:this={altchaEl}
-						challengejson={data?.altchaChallenge ? JSON.stringify(data.altchaChallenge) : undefined}
-						name="altcha-response"
-						auto="onsubmit"
-						hidefooter={true}
-					></altcha-widget>
-				</div>
+				<input type="hidden" name="altcha-response" value={altchaPayload} />
 
-				<button type="submit" class="btn mt-4 w-full btn-primary" disabled={submitting}>
+				{#if solveError}
+					<div class="alert alert-warning py-2 text-sm">
+						Security verification failed — please refresh the page and try again.
+					</div>
+				{/if}
+
+				<button type="submit" class="btn mt-4 w-full btn-primary" disabled={submitting || solving || solveError}>
 					{#if submitting}
 						<span class="loading loading-spinner"></span>
 						Sending...
+					{:else if solving}
+						<span class="loading loading-spinner loading-xs"></span>
+						Verifying...
 					{:else}
 						Send Message
 					{/if}
