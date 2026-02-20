@@ -52,7 +52,7 @@ $effect(() => {
 				<ul class="flex flex-col gap-2">
 					<li><a href="/privacy" class="link link-hover text-sm">Privacy Policy</a></li>
 					<li><a href="/terms" class="link link-hover text-sm">Terms of Service</a></li>
-					<li><a href="/contact" class="link link-hover text-sm">Contact</a></li>
+					<li><a href="/dmca" class="link link-hover text-sm">DMCA Policy</a></li>				<li><a href="/ccpa" class="link link-hover text-sm">CCPA Notice</a></li>					<li><a href="/contact" class="link link-hover text-sm">Contact</a></li>
 				</ul>
 			</nav>
 
@@ -84,7 +84,13 @@ $effect(() => {
 	<!-- Bottom bar: copyright left, powered-by right -->
 	<div class="w-full border-t border-base-300 bg-base-200">
 		<div class="mx-auto w-full max-w-7xl px-6 py-3 flex items-center justify-between text-sm">
-			<div>© {currentYear} {$businessInfo.name}. All rights reserved.</div>
+			<div class="flex items-center gap-4">
+				<span>© {currentYear} {$businessInfo.name}. All rights reserved.</span>
+				<a href="/dmca" class="link link-hover opacity-60">DMCA</a>
+				<a href="/ccpa" class="link link-hover opacity-60">CCPA</a>
+				<a href="/gdpr" class="link link-hover opacity-60">GDPR</a>
+				<a href="/accessibility" class="link link-hover opacity-60">Accessibility</a>
+			</div>
 			<div>
 				<a href={poweredByHref} target="_blank" rel="noopener noreferrer" class="link link-hover">
 					Powered by PremoWeb LLC
