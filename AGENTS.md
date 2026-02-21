@@ -1,3 +1,14 @@
+## Package Manager
+
+Always use **bun** instead of npm or npx. This applies to all commands:
+- `bun install` instead of `npm install`
+- `bun run <script>` instead of `npm run <script>`
+- `bunx` instead of `npx`
+- `bun add` instead of `npm install <package>`
+- `bun remove` instead of `npm uninstall <package>`
+
+---
+
 You are able to use the Svelte MCP server, where you have access to comprehensive Svelte 5 and SvelteKit documentation. Here's how to use the available tools effectively:
 
 ## Available MCP Tools:
