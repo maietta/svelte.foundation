@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Portfolio from '$lib/layouts/Portfolio.svelte';
+	import PageHead from '$lib/components/PageHead.svelte';
 
 	const projects = [
 		{
@@ -86,10 +87,11 @@
 	];
 </script>
 
-<svelte:head>
-	<title>Portfolio</title>
-	<meta name="description" content="A selection of projects we are proud of." />
-</svelte:head>
+<PageHead
+	title="Portfolio"
+	description="A selection of projects we are proud of — from dashboards and mobile apps to open-source tools and enterprise platforms."
+	label="Portfolio"
+/>
 
 <Portfolio
 	title="Our Work"

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Dashboard from '$lib/layouts/Dashboard.svelte';
+	import PageHead from '$lib/components/PageHead.svelte';
 
 	const navItems = [
 		{ id: 'overview', label: 'Overview', icon: '📊', href: '/dashboard' },
@@ -19,29 +20,27 @@
 
 	const tableHeaders = ['Order ID', 'Customer', 'Date', 'Amount', 'Status'];
 
-	const tableRows = [
-		['#10482', 'Alex Morgan', '12 Jul 2025', '$249.00', 'Delivered'],
-		['#10481', 'Jordan Lee', '12 Jul 2025', '$89.99', 'Processing'],
-		['#10480', 'Sam Rivera', '11 Jul 2025', '$499.00', 'Delivered'],
-		['#10479', 'Casey Park', '11 Jul 2025', '$34.50', 'Cancelled'],
-		['#10478', 'Taylor Brooks', '10 Jul 2025', '$179.00', 'Delivered'],
-		['#10477', 'Drew Kim', '10 Jul 2025', '$64.00', 'Processing'],
-		['#10476', 'Jamie Nguyen', '9 Jul 2025', '$312.00', 'Delivered'],
-		['#10475', 'Morgan Chen', '9 Jul 2025', '$145.00', 'Delivered']
+	const tableRows: Record<string, string>[] = [
+		{ orderId: '#10482', customer: 'Alex Morgan', date: '12 Jul 2025', amount: '$249.00', status: 'Delivered' },
+		{ orderId: '#10481', customer: 'Jordan Lee', date: '12 Jul 2025', amount: '$89.99', status: 'Processing' },
+		{ orderId: '#10480', customer: 'Sam Rivera', date: '11 Jul 2025', amount: '$499.00', status: 'Delivered' },
+		{ orderId: '#10479', customer: 'Casey Park', date: '11 Jul 2025', amount: '$34.50', status: 'Cancelled' },
+		{ orderId: '#10478', customer: 'Taylor Brooks', date: '10 Jul 2025', amount: '$179.00', status: 'Delivered' },
+		{ orderId: '#10477', customer: 'Drew Kim', date: '10 Jul 2025', amount: '$64.00', status: 'Processing' },
+		{ orderId: '#10476', customer: 'Jamie Nguyen', date: '9 Jul 2025', amount: '$312.00', status: 'Delivered' },
+		{ orderId: '#10475', customer: 'Morgan Chen', date: '9 Jul 2025', amount: '$145.00', status: 'Delivered' }
 	];
 </script>
 
-<svelte:head>
-	<title>Dashboard</title>
-	<meta name="description" content="Admin dashboard layout example." />
-</svelte:head>
+<PageHead
+	title="Dashboard"
+	description="Admin dashboard."
+	noindex={true}
+/>
 
 <Dashboard
-	title="Admin Dashboard"
-	orgName="Acme Corp"
 	{navItems}
 	{stats}
 	{tableHeaders}
 	{tableRows}
-	tableTitle="Recent Orders"
 />

@@ -2,6 +2,7 @@
 	import { page } from '$app/stores';
 	import SplitHero from '$lib/layouts/SplitHero.svelte';
 	import CtaSection from '$lib/sections/CtaSection.svelte';
+	import PageHead from '$lib/components/PageHead.svelte';
 
 	const servicesData: Record<
 		string,
@@ -287,10 +288,11 @@
 	);
 </script>
 
-<svelte:head>
-	<title>{service?.title ?? 'Service'} | Services</title>
-	<meta name="description" content={service?.description ?? ''} />
-</svelte:head>
+<PageHead
+	title={service?.title ?? 'Service'}
+	description={service?.description ?? ''}
+	label="Services"
+/>
 
 {#if service}
 	<div class="service-detail">

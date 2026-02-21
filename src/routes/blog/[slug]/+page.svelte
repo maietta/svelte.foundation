@@ -1,29 +1,19 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { blogPosts } from '$lib/stores/blog';
+	import { businessInfo } from '$lib/stores/business';
 	import BlogPost from '$lib/layouts/BlogPost.svelte';
+	import PageHead from '$lib/components/PageHead.svelte';
 
 	const slug = $derived($page.params.slug);
 	const post = $derived($blogPosts.find((p) => p.slug === slug));
-
-	const ogImage = $derived(
-		post
-			? `${$page.url.origin}/og?${new URLSearchParams({ title: post.title, description: post.excerpt, label: 'Blog' })}`
-			: `${$page.url.origin}/og`
-	);
 </script>
 
-<svelte:head>
-	<title>{post?.title ?? 'Blog Post'} | Blog</title>
-	<meta name="description" content={post?.excerpt ?? ''} />
-	<meta property="og:url" content={$page.url.href} />
-	<meta property="og:title" content="{post?.title ?? 'Blog Post'} | Blog" />
-	<meta property="og:description" content={post?.excerpt ?? ''} />
-	<meta property="og:image" content={ogImage} />
-	<meta name="twitter:title" content="{post?.title ?? 'Blog Post'} | Blog" />
-	<meta name="twitter:description" content={post?.excerpt ?? ''} />
-	<meta name="twitter:image" content={ogImage} />
-</svelte:head>
+<PageHead
+	title={post?.title ?? $businessInfo.name + ' Blog'}
+	description={post?.excerpt ?? $businessInfo.tagline ?? ''}
+	label="Blog"
+/>
 
 {#if post}
 	{#key slug}

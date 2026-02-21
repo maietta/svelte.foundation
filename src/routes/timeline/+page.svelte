@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Timeline from '$lib/layouts/Timeline.svelte';
+	import PageHead from '$lib/components/PageHead.svelte';
 
 	const events = [
 		{
@@ -69,10 +70,11 @@
 	];
 </script>
 
-<svelte:head>
-	<title>Our Story</title>
-	<meta name="description" content="The milestones that shaped our company." />
-</svelte:head>
+<PageHead
+	title="Our Story"
+	description="The milestones that shaped our company — from a rented desk to thousands of customers."
+	label="About"
+/>
 
 <Timeline
 	title="Our Story"

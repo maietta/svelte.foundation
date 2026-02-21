@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Faq from '$lib/layouts/Faq.svelte';
+	import PageHead from '$lib/components/PageHead.svelte';
 
 	const categories = [
 		{
@@ -74,10 +75,11 @@
 	];
 </script>
 
-<svelte:head>
-	<title>FAQ</title>
-	<meta name="description" content="Frequently asked questions about our platform." />
-</svelte:head>
+<PageHead
+	title="FAQ"
+	description="Frequently asked questions about our platform."
+	label="FAQ"
+/>
 
 <Faq
 	title="Frequently Asked Questions"

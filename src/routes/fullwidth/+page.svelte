@@ -1,10 +1,13 @@
 <script lang="ts">
 	import FullWidth from '$lib/layouts/FullWidth.svelte';
+	import PageHead from '$lib/components/PageHead.svelte';
 </script>
 
-<svelte:head>
-	<title>FullWidth Layout</title>
-</svelte:head>
+<PageHead
+	title="Full-Width Layout"
+	description="Full-width layout demo."
+	noindex={true}
+/>
 
 <FullWidth>
 	<section class="hero-skeleton">

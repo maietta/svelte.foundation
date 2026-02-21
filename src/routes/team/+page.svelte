@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Team from '$lib/layouts/Team.svelte';
+	import PageHead from '$lib/components/PageHead.svelte';
 
 	const members = [
 		{
@@ -41,10 +42,11 @@
 	];
 </script>
 
-<svelte:head>
-	<title>Our Team</title>
-	<meta name="description" content="Meet the people behind the work." />
-</svelte:head>
+<PageHead
+	title="Our Team"
+	description="Meet the people behind the work — engineers, designers, and strategists dedicated to building great products."
+	label="Team"
+/>
 
 <Team
 	title="Meet Our Team"

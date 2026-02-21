@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ServicesGrid from '$lib/layouts/ServicesGrid.svelte';
+	import PageHead from '$lib/components/PageHead.svelte';
 
 	const services = [
 		{
@@ -84,9 +85,10 @@
 	];
 </script>
 
-<svelte:head>
-	<title>Services</title>
-	<meta name="description" content="Our professional services" />
-</svelte:head>
+<PageHead
+	title="Services"
+	description="Web development, mobile apps, cloud infrastructure, firmware, API design, and more — built to grow your business."
+	label="Services"
+/>
 
 <ServicesGrid {services} columns={3} />

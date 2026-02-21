@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { businessInfo } from '$lib/stores/business';
+	import PageHead from '$lib/components/PageHead.svelte';
 </script>
 
-<svelte:head>
-	<title>DMCA Policy</title>
-	<meta name="description" content="Our DMCA takedown policy and how to submit a copyright infringement notice." />
-</svelte:head>
+<PageHead
+	title="DMCA Policy"
+	description="Our DMCA takedown policy and how to submit a copyright infringement notice."
+/>
 
 <div class="mx-auto max-w-3xl px-6 py-16">
 	<h1 class="text-3xl font-bold text-base-content mb-2">DMCA Policy</h1>

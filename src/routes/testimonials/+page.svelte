@@ -1,15 +1,14 @@
 <script lang="ts">
 	import Testimonials from '$lib/layouts/Testimonials.svelte';
 	import CtaSection from '$lib/sections/CtaSection.svelte';
+	import PageHead from '$lib/components/PageHead.svelte';
+	import { businessInfo } from '$lib/stores/business';
 </script>
 
-<svelte:head>
-	<title>Client Testimonials | PremoWeb LLC</title>
-	<meta
-		name="description"
-		content="See what our clients say about working with PremoWeb — real results from web development, mobile, cloud, security, and consulting projects."
-	/>
-</svelte:head>
+<PageHead
+	title="Client Testimonials"
+	description="See what our clients say about working with {$businessInfo.name} — real results from web development, mobile, cloud, security, and consulting projects."
+/>
 
 <Testimonials
 	title="What Our Clients Say"

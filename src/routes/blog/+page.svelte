@@ -2,27 +2,20 @@
 	import BlogIndex from '$lib/layouts/BlogIndex.svelte';
 	import CtaSection from '$lib/sections/CtaSection.svelte';
 	import { allCategories } from '$lib/stores/blog';
-	import { page } from '$app/state';
 	import { businessInfo } from '$lib/stores/business';
-
-	const ogImage = $derived(
-		`${page.url.origin}/og?${new URLSearchParams({ title: 'Blog', description: 'Latest news, guides, and insights from ' + $businessInfo.name, label: 'Blog' })}`
-	);
+	import PageHead from '$lib/components/PageHead.svelte';
 </script>
 
-<svelte:head>
-	<title>Blog | {$businessInfo.name}</title>
-	<meta name="description" content="Latest news, guides, and insights from {$businessInfo.name}." />
-	<meta property="og:url" content={page.url.href} />
-	<meta property="og:title" content="Blog | {$businessInfo.name}" />
-	<meta property="og:description" content="Latest news, guides, and insights from {$businessInfo.name}." />
-	<meta property="og:image" content={ogImage} />
-	<meta name="twitter:title" content="Blog | {$businessInfo.name}" />
-	<meta name="twitter:description" content="Latest news, guides, and insights from {$businessInfo.name}." />
-	<meta name="twitter:image" content={ogImage} />
-</svelte:head>
+<PageHead
+	title="Blog"
+	description="Latest news, guides, and insights from {$businessInfo.name}."
+	label="Blog"
+/>
 
-<BlogIndex />
+<BlogIndex
+	title="Blog"
+	subtitle="Latest news, guides, and insights from {$businessInfo.name}."
+/>
 
 <CtaSection
 	variant="dark"

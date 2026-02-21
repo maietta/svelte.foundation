@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Pricing from '$lib/layouts/Pricing.svelte';
+	import PageHead from '$lib/components/PageHead.svelte';
 
 	const tiers = [
 		{
@@ -62,10 +63,11 @@
 	];
 </script>
 
-<svelte:head>
-	<title>Pricing</title>
-	<meta name="description" content="Simple, transparent pricing for every stage of your business." />
-</svelte:head>
+<PageHead
+	title="Pricing"
+	description="Simple, transparent pricing for every stage of your business."
+	label="Pricing"
+/>
 
 <Pricing
 	title="Simple, Transparent Pricing"

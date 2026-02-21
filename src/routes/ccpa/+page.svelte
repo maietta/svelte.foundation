@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { businessInfo } from '$lib/stores/business';
+	import PageHead from '$lib/components/PageHead.svelte';
 </script>
 
-<svelte:head>
-	<title>CCPA Privacy Notice</title>
-	<meta name="description" content="California Consumer Privacy Act (CCPA) notice detailing your rights and how we handle your personal information." />
-</svelte:head>
+<PageHead
+	title="CCPA Privacy Notice"
+	description="California Consumer Privacy Act (CCPA) notice detailing your rights and how we handle your personal information."
+/>
 
 <div class="mx-auto max-w-3xl px-6 py-16">
 	<h1 class="text-3xl font-bold text-base-content mb-2">California Consumer Privacy Act (CCPA) Notice</h1>

@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { businessInfo } from '$lib/stores/business';
+	import PageHead from '$lib/components/PageHead.svelte';
 </script>
 
-<svelte:head>
-	<title>Accessibility Statement</title>
-	<meta name="description" content="Our commitment to web accessibility under the Americans with Disabilities Act (ADA) and how our technology choices support inclusive design." />
-</svelte:head>
+<PageHead
+	title="Accessibility Statement"
+	description="Our commitment to web accessibility under the Americans with Disabilities Act (ADA) and how our technology choices support inclusive design."
+/>
 
 <div class="mx-auto max-w-3xl px-6 py-16">
 	<h1 class="text-3xl font-bold text-base-content mb-2">Accessibility Statement</h1>

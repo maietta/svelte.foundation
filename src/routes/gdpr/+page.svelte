@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { businessInfo } from '$lib/stores/business';
+	import PageHead from '$lib/components/PageHead.svelte';
 </script>
 
-<svelte:head>
-	<title>GDPR Privacy Notice</title>
-	<meta name="description" content="General Data Protection Regulation (GDPR) notice describing how we collect, use, and protect your personal data." />
-</svelte:head>
+<PageHead
+	title="GDPR Privacy Notice"
+	description="General Data Protection Regulation (GDPR) notice describing how we collect, use, and protect your personal data."
+/>
 
 <div class="mx-auto max-w-3xl px-6 py-16">
 	<h1 class="text-3xl font-bold text-base-content mb-2">GDPR Privacy Notice</h1>

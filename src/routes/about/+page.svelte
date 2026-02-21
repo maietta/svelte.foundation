@@ -1,6 +1,7 @@
 <script lang="ts">
 	import TwoColumn from '$lib/layouts/TwoColumn.svelte';
 	import { businessInfo } from '$lib/stores/business';
+	import PageHead from '$lib/components/PageHead.svelte';
 
 	const sidebarItems = [
 		{ label: 'Our Story', href: '/about' },
@@ -10,10 +11,10 @@
 	];
 </script>
 
-<svelte:head>
-	<title>About Us</title>
-	<meta name="description" content="Learn more about {$businessInfo.name}" />
-</svelte:head>
+<PageHead
+	title="About Us"
+	description="Learn more about {$businessInfo.name} — our mission, values, and the team behind the work."
+/>
 
 <TwoColumn {sidebarItems}>
 	<h1>About {$businessInfo.name}</h1>
