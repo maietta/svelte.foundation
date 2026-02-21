@@ -72,12 +72,6 @@
 	let emailVal = $state('');
 	let messageVal = $state('');
 
-	function fillTestData() {
-		nameVal = 'John Doe';
-		emailVal = 'nick@premoweb.com';
-		messageVal = 'This is a test message sent to verify the contact form is working correctly.';
-	}
-
 	function resetForm() {
 		nameVal = '';
 		emailVal = '';
@@ -232,13 +226,6 @@
 					{/if}
 				</button>
 
-				<button
-					type="button"
-					onclick={fillTestData}
-					class="btn btn-ghost btn-sm mt-2 w-full opacity-50 hover:opacity-100"
-				>
-					Fill test data
-				</button>
 			</form>
 		{/if}
 	</div>
