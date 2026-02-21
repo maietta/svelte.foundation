@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { businessInfo } from '$lib/stores/business';
 	import { navigationItems } from '$lib/stores/navigation';
+	import { slide } from 'svelte/transition';
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
-	import { page } from '$app/stores';
-	import { afterNavigate } from '$app/navigation';
+	import { page, navigating } from '$app/state';
+
 
 	const userTimezone = browser ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'UTC';
 
@@ -12,17 +13,22 @@
 	let isScrolled = $derived(scrollY > 50);
 	let layoutDropdownOpen = $state(false);
 	const headerNavItems = $derived($navigationItems.filter((item) => item.showOnHeader));
-	const currentPath = $derived($page.url.pathname);
+	// Use navigating.to during navigation so the indicator moves immediately on click,
+	// before the page transition finishes.
+	const activePath = $derived(navigating.to?.url.pathname ?? page.url.pathname);
 	const layoutOnlyPaths = ['/fullwidth', '/pricing', '/team', '/portfolio', '/dashboard', '/timeline'];
-	const isLayoutsActive = $derived(layoutOnlyPaths.some((p) => currentPath === p || currentPath.startsWith(p + '/')));
+	const isLayoutsActive = $derived(layoutOnlyPaths.some((p) => activePath === p || activePath.startsWith(p + '/')));
 
 	function isActive(href: string): boolean {
-		if (href === '/') return currentPath === '/';
-		return currentPath === href || currentPath.startsWith(href + '/');
+		if (href === '/') return activePath === '/';
+		return activePath === href || activePath.startsWith(href + '/');
 	}
 
 	// sliding nav indicator
 	let navEl: HTMLElement | null = $state(null);
+	let navLinkEls: (HTMLElement | null)[] = $state([]);
+	let layoutsBtnEl: HTMLElement | null = $state(null);
+	let faqLinkEl: HTMLElement | null = $state(null);
 	let indicatorLeft = $state(0);
 	let indicatorWidth = $state(0);
 	let indicatorTop = $state(0);
@@ -30,42 +36,38 @@
 	let indicatorVisible = $state(false);
 	let indicatorMounted = $state(false);
 
-	function updateIndicator() {
-		if (!navEl) return;
-		const activeEl = navEl.querySelector<HTMLElement>('a.menu-active, button.btn-active');
-		if (activeEl) {
-			const navRect = navEl.getBoundingClientRect();
-			const elRect = activeEl.getBoundingClientRect();
-			indicatorLeft = elRect.left - navRect.left;
-			indicatorWidth = elRect.width;
-			indicatorTop = elRect.top - navRect.top;
-			indicatorHeight = elRect.height;
-			indicatorVisible = true;
-		} else {
-			indicatorVisible = false;
-		}
-	}
-
-	// afterNavigate fires after the page has fully settled — no mid-transition measurements
-	afterNavigate(() => {
-		requestAnimationFrame(() => {
-			updateIndicator();
-			// On the very first call indicatorMounted is false (no transition),
-			// on subsequent navigations it's already true (pill slides).
-			indicatorMounted = true;
-		});
+	// Reactively resolve which element should have the pill — no DOM querying needed
+	const activeNavEl = $derived.by(() => {
+		const activeIdx = headerNavItems.findIndex((item) => isActive(item.href));
+		if (activeIdx >= 0) return navLinkEls[activeIdx] ?? null;
+		if (isLayoutsActive) return layoutsBtnEl;
+		if (isActive('/faq')) return faqLinkEl;
+		return null;
 	});
 
-	let headerEl: HTMLElement | null = null;
-	let megaTop = $state(0);
-
-	function updateMegaTop() {
-		if (headerEl) {
-			megaTop = Math.ceil(headerEl.getBoundingClientRect().height);
-		} else {
-			megaTop = 0;
-		}
+	function updateIndicator() {
+		const el = activeNavEl;
+		if (!el || !navEl) { indicatorVisible = false; return; }
+		const navRect = navEl.getBoundingClientRect();
+		const elRect = el.getBoundingClientRect();
+		indicatorLeft = elRect.left - navRect.left;
+		indicatorWidth = elRect.width;
+		indicatorTop = elRect.top - navRect.top;
+		indicatorHeight = elRect.height;
+		indicatorVisible = true;
 	}
+
+	// $effect re-runs whenever activeNavEl changes (i.e. on every navigation),
+	// replacing the afterNavigate + querySelector approach entirely.
+	$effect(() => {
+		const el = activeNavEl;
+		const raf = requestAnimationFrame(() => {
+			if (!el || !navEl) { indicatorVisible = false; }
+			else { updateIndicator(); }
+			indicatorMounted = true;
+		});
+		return () => cancelAnimationFrame(raf);
+	});
 
 	function toggleLayoutDropdown() {
 		layoutDropdownOpen = !layoutDropdownOpen;
@@ -87,41 +89,18 @@
 	}
 
 	onMount(() => {
-		let transitionTimer: ReturnType<typeof setTimeout>;
-		const handleScroll = () => {
-			scrollY = window.scrollY;
-			updateMegaTop();
-			// also update after transition completes (300ms duration)
-			clearTimeout(transitionTimer);
-			transitionTimer = setTimeout(updateMegaTop, 320);
-		};
+		const handleScroll = () => { scrollY = window.scrollY; };
+		const onResize = () => requestAnimationFrame(updateIndicator);
 		window.addEventListener('scroll', handleScroll, { passive: true });
-		window.addEventListener('resize', updateMegaTop, { passive: true });
-		window.addEventListener('resize', updateIndicator, { passive: true });
+		window.addEventListener('resize', onResize, { passive: true });
 		document.addEventListener('keydown', handleKeydown);
-		// set initial top
-		updateMegaTop();
 		document.addEventListener('click', handleDocumentClick);
 		return () => {
 			window.removeEventListener('scroll', handleScroll);
-			window.removeEventListener('resize', updateMegaTop);
-			window.removeEventListener('resize', updateIndicator);
+			window.removeEventListener('resize', onResize);
 			document.removeEventListener('click', handleDocumentClick);
 			document.removeEventListener('keydown', handleKeydown);
-			clearTimeout(transitionTimer);
 		};
-	});
-
-	$effect(() => {
-		// re-run whenever isScrolled flips so megaTop stays current
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		isScrolled;
-		if (headerEl) {
-			updateMegaTop();
-			// catch the end of the 300ms CSS transition
-			const t = setTimeout(updateMegaTop, 320);
-			return () => clearTimeout(t);
-		}
 	});
 
 	function formatTimeInTimezone(time: string, fromTz: string, toTz: string): string {
@@ -160,7 +139,7 @@
 	}
 </script>
 
-<header bind:this={headerEl} class="sticky top-0 z-50">
+<header class="sticky top-0 z-50">
 	<div
 		class="border-b border-base-300 bg-base-200 transition-all duration-300"
 		style="padding-top: {isScrolled ? '0.25rem' : '1rem'}; padding-bottom: {isScrolled ? '0.25rem' : '1rem'};"
@@ -220,20 +199,20 @@
 						{#each headerNavItems as item}
 					<li><a href={item.href} class:menu-active={isActive(item.href)}>{item.label}</a></li>
 				{/each}
-					<li><a href="/" class:menu-active={currentPath === '/'}>FrontPage</a></li>
+					<li><a href="/" class:menu-active={page.url.pathname === '/'}>FrontPage</a></li>
 					<li><a href="/blog" class:menu-active={isActive('/blog')}>BlogIndex</a></li>
-					<li><a href="/blog/getting-started-with-sveltekit" class:menu-active={currentPath === '/blog/getting-started-with-sveltekit'}>BlogPost</a></li>
+					<li><a href="/blog/getting-started-with-sveltekit" class:menu-active={page.url.pathname === '/blog/getting-started-with-sveltekit'}>BlogPost</a></li>
 					<li><a href="/services" class:menu-active={isActive('/services')}>ServicesGrid</a></li>
-					<li><a href="/services/responsive-design-best-practices" class:menu-active={currentPath === '/services/responsive-design-best-practices'}>SplitHero</a></li>
-					<li><a href="/about" class:menu-active={currentPath === '/about'}>TwoColumn</a></li>
-					<li><a href="/contact" class:menu-active={currentPath === '/contact'}>ContactPage</a></li>
-					<li><a href="/fullwidth" class:menu-active={currentPath === '/fullwidth'}>FullWidth</a></li>
-					<li><a href="/pricing" class:menu-active={currentPath === '/pricing'}>Pricing</a></li>
-					<li><a href="/team" class:menu-active={currentPath === '/team'}>Team</a></li>
-					<li><a href="/faq" class:menu-active={currentPath === '/faq'}>FAQ</a></li>
-					<li><a href="/portfolio" class:menu-active={currentPath === '/portfolio'}>Portfolio</a></li>
-					<li><a href="/dashboard" class:menu-active={currentPath === '/dashboard'}>Dashboard</a></li>
-					<li><a href="/timeline" class:menu-active={currentPath === '/timeline'}>Timeline</a></li>
+					<li><a href="/services/responsive-design-best-practices" class:menu-active={page.url.pathname === '/services/responsive-design-best-practices'}>SplitHero</a></li>
+					<li><a href="/about" class:menu-active={page.url.pathname === '/about'}>TwoColumn</a></li>
+					<li><a href="/contact" class:menu-active={page.url.pathname === '/contact'}>ContactPage</a></li>
+					<li><a href="/fullwidth" class:menu-active={page.url.pathname === '/fullwidth'}>FullWidth</a></li>
+					<li><a href="/pricing" class:menu-active={page.url.pathname === '/pricing'}>Pricing</a></li>
+					<li><a href="/team" class:menu-active={page.url.pathname === '/team'}>Team</a></li>
+					<li><a href="/faq" class:menu-active={page.url.pathname === '/faq'}>FAQ</a></li>
+					<li><a href="/portfolio" class:menu-active={page.url.pathname === '/portfolio'}>Portfolio</a></li>
+					<li><a href="/dashboard" class:menu-active={page.url.pathname === '/dashboard'}>Dashboard</a></li>
+					<li><a href="/timeline" class:menu-active={page.url.pathname === '/timeline'}>Timeline</a></li>
 					</ul>
 				</div>
 
@@ -246,11 +225,11 @@
 							style="left:{indicatorLeft}px; width:{indicatorWidth}px; top:{indicatorTop}px; height:{indicatorHeight}px; transition:{indicatorMounted ? 'left 0.3s cubic-bezier(0.4,0,0.2,1), width 0.3s cubic-bezier(0.4,0,0.2,1)' : 'none'};"
 						></span>
 					{/if}
-					{#each headerNavItems as item}
-						<li class="z-10"><a href={item.href} class:menu-active={isActive(item.href)}>{item.label}</a></li>
+					{#each headerNavItems as item, i}
+						<li class="z-10"><a href={item.href} bind:this={navLinkEls[i]} aria-current={isActive(item.href) ? 'page' : undefined}>{item.label}</a></li>
 					{/each}
 					<li class="mega-menu-container relative z-10">
-						<button type="button" class="btn btn-ghost btn-sm" class:btn-active={isLayoutsActive} onclick={toggleLayoutDropdown}>
+						<button type="button" class="btn btn-ghost btn-sm" bind:this={layoutsBtnEl} aria-current={isLayoutsActive ? 'page' : undefined} onclick={toggleLayoutDropdown}>
 							Layouts
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -269,7 +248,7 @@
 							</svg>
 						</button>
 					</li>
-					<li class="z-10"><a href="/faq" class:menu-active={isActive('/faq')}>FAQ</a></li>
+					<li class="z-10"><a href="/faq" bind:this={faqLinkEl} aria-current={isActive('/faq') ? 'page' : undefined}>FAQ</a></li>
 				</ul>
 			</div>
 
@@ -277,20 +256,13 @@
 				<span class="hidden text-sm md:inline-block">Hours: {getTodayHours()}</span>
 			</div>
 		</div>
-	</nav>
 
-</header>
-
-
-{#if layoutDropdownOpen}
-	<div
-		role="dialog"
-		tabindex="0"
-		class="mega-menu-container fixed inset-x-0 z-40 mx-auto max-w-7xl border border-base-300 bg-base-100 shadow-xl"
-		style="top: {megaTop}px;"
-		onclick={(e) => e.stopPropagation()}
-		onkeydown={(e) => e.key === 'Escape' && closeLayoutDropdown()}
-	>
+		{#if layoutDropdownOpen}
+			<div
+				transition:slide={{ duration: 250 }}
+				class="mega-menu-container absolute top-full left-0 right-0 z-40 border-b border-base-300 bg-base-100 shadow-xl"
+			>
+			<div class="mx-auto max-w-7xl">
 		<!-- Header -->
 		<div class="flex items-center justify-between border-b border-base-300 px-6 py-3">
 			<div>
@@ -321,7 +293,7 @@
 							href="/"
 							onclick={closeLayoutDropdown}
 							class="block rounded-lg px-3 py-2 transition-colors hover:bg-base-200"
-							class:bg-base-200={currentPath === '/'}
+							class:bg-base-200={page.url.pathname === '/'}
 						>
 							<div class="text-sm font-medium text-base-content">FrontPage</div>
 							<div class="text-xs opacity-50">Hero, feature cards &amp; CTA</div>
@@ -332,7 +304,7 @@
 							href="/services/responsive-design-best-practices"
 							onclick={closeLayoutDropdown}
 							class="block rounded-lg px-3 py-2 transition-colors hover:bg-base-200"
-							class:bg-base-200={currentPath === '/services/responsive-design-best-practices'}
+							class:bg-base-200={page.url.pathname === '/services/responsive-design-best-practices'}
 						>
 							<div class="text-sm font-medium text-base-content">SplitHero</div>
 							<div class="text-xs opacity-50">50/50 text &amp; image sections</div>
@@ -350,7 +322,7 @@
 							href="/blog"
 							onclick={closeLayoutDropdown}
 							class="block rounded-lg px-3 py-2 transition-colors hover:bg-base-200"
-							class:bg-base-200={currentPath === '/blog'}
+							class:bg-base-200={page.url.pathname === '/blog'}
 						>
 							<div class="text-sm font-medium text-base-content">BlogIndex</div>
 							<div class="text-xs opacity-50">Article grid with pagination</div>
@@ -361,7 +333,7 @@
 							href="/blog/getting-started-with-sveltekit"
 							onclick={closeLayoutDropdown}
 							class="block rounded-lg px-3 py-2 transition-colors hover:bg-base-200"
-							class:bg-base-200={currentPath === '/blog/getting-started-with-sveltekit'}
+							class:bg-base-200={page.url.pathname === '/blog/getting-started-with-sveltekit'}
 						>
 							<div class="text-sm font-medium text-base-content">BlogPost</div>
 							<div class="text-xs opacity-50">Single article with sidebar</div>
@@ -379,7 +351,7 @@
 							href="/about"
 							onclick={closeLayoutDropdown}
 							class="block rounded-lg px-3 py-2 transition-colors hover:bg-base-200"
-							class:bg-base-200={currentPath === '/about'}
+							class:bg-base-200={page.url.pathname === '/about'}
 						>
 							<div class="text-sm font-medium text-base-content">TwoColumn</div>
 							<div class="text-xs opacity-50">Sticky sidebar &amp; main content</div>
@@ -390,7 +362,7 @@
 							href="/fullwidth"
 							onclick={closeLayoutDropdown}
 							class="block rounded-lg px-3 py-2 transition-colors hover:bg-base-200"
-							class:bg-base-200={currentPath === '/fullwidth'}
+							class:bg-base-200={page.url.pathname === '/fullwidth'}
 						>
 							<div class="text-sm font-medium text-base-content">FullWidth</div>
 							<div class="text-xs opacity-50">Edge-to-edge, no sidebars</div>
@@ -408,7 +380,7 @@
 							href="/services"
 							onclick={closeLayoutDropdown}
 							class="block rounded-lg px-3 py-2 transition-colors hover:bg-base-200"
-							class:bg-base-200={currentPath === '/services'}
+							class:bg-base-200={page.url.pathname === '/services'}
 						>
 							<div class="text-sm font-medium text-base-content">ServicesGrid</div>
 							<div class="text-xs opacity-50">Icon, title &amp; description cards</div>
@@ -419,7 +391,7 @@
 							href="/contact"
 							onclick={closeLayoutDropdown}
 							class="block rounded-lg px-3 py-2 transition-colors hover:bg-base-200"
-							class:bg-base-200={currentPath === '/contact'}
+							class:bg-base-200={page.url.pathname === '/contact'}
 						>
 							<div class="text-sm font-medium text-base-content">ContactPage</div>
 							<div class="text-xs opacity-50">Form with contact info split</div>
@@ -437,7 +409,7 @@
 							href="/pricing"
 							onclick={closeLayoutDropdown}
 							class="block rounded-lg px-3 py-2 transition-colors hover:bg-base-200"
-							class:bg-base-200={currentPath === '/pricing'}
+							class:bg-base-200={page.url.pathname === '/pricing'}
 						>
 							<div class="text-sm font-medium text-base-content">Pricing</div>
 							<div class="text-xs opacity-50">Tiered plans with feature lists</div>
@@ -448,7 +420,7 @@
 							href="/team"
 							onclick={closeLayoutDropdown}
 							class="block rounded-lg px-3 py-2 transition-colors hover:bg-base-200"
-							class:bg-base-200={currentPath === '/team'}
+							class:bg-base-200={page.url.pathname === '/team'}
 						>
 							<div class="text-sm font-medium text-base-content">Team</div>
 							<div class="text-xs opacity-50">Member cards with social links</div>
@@ -459,7 +431,7 @@
 							href="/faq"
 							onclick={closeLayoutDropdown}
 							class="block rounded-lg px-3 py-2 transition-colors hover:bg-base-200"
-							class:bg-base-200={currentPath === '/faq'}
+							class:bg-base-200={page.url.pathname === '/faq'}
 						>
 							<div class="text-sm font-medium text-base-content">FAQ</div>
 							<div class="text-xs opacity-50">Categorised accordion questions</div>
@@ -470,7 +442,7 @@
 							href="/portfolio"
 							onclick={closeLayoutDropdown}
 							class="block rounded-lg px-3 py-2 transition-colors hover:bg-base-200"
-							class:bg-base-200={currentPath === '/portfolio'}
+							class:bg-base-200={page.url.pathname === '/portfolio'}
 						>
 							<div class="text-sm font-medium text-base-content">Portfolio</div>
 							<div class="text-xs opacity-50">Filterable project grid</div>
@@ -481,7 +453,7 @@
 							href="/dashboard"
 							onclick={closeLayoutDropdown}
 							class="block rounded-lg px-3 py-2 transition-colors hover:bg-base-200"
-							class:bg-base-200={currentPath === '/dashboard'}
+							class:bg-base-200={page.url.pathname === '/dashboard'}
 						>
 							<div class="text-sm font-medium text-base-content">Dashboard</div>
 							<div class="text-xs opacity-50">Sidebar, stats &amp; data table</div>
@@ -492,7 +464,7 @@
 							href="/timeline"
 							onclick={closeLayoutDropdown}
 							class="block rounded-lg px-3 py-2 transition-colors hover:bg-base-200"
-							class:bg-base-200={currentPath === '/timeline'}
+							class:bg-base-200={page.url.pathname === '/timeline'}
 						>
 							<div class="text-sm font-medium text-base-content">Timeline</div>
 							<div class="text-xs opacity-50">Vertical event &amp; milestone list</div>
@@ -502,16 +474,20 @@
 			</div>
 		</div>
 
-		<!-- Footer -->
-		<div class="border-t border-base-300 px-6 py-2.5 text-xs opacity-40">
-			All layouts use SvelteKit + DaisyUI v5 + Tailwind CSS
-		</div>
-	</div>
-{/if}
+			<!-- Footer -->
+			<div class="border-t border-base-300 px-6 py-2.5 text-xs opacity-40">
+				All layouts use SvelteKit + DaisyUI v5 + Tailwind CSS
+			</div>
+		</div><!-- /max-w-7xl -->
+		</div><!-- /mega-menu-container -->
+		{/if}
+	</nav>
+
+</header>
 
 <style>
-	/* Suppress DaisyUI's menu-active background on desktop nav — our sliding pill provides it */
-	.nav-pill-host :where(li > a.menu-active) {
+	/* Style aria-current links/buttons on desktop nav — sliding pill provides the background */
+	.nav-pill-host :where(li > a[aria-current="page"], li > button[aria-current="page"]) {
 		background-color: transparent !important;
 		background-image: none !important;
 		box-shadow: none !important;
