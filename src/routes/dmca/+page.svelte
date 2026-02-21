@@ -43,10 +43,11 @@
 			<p class="opacity-80 leading-relaxed mb-3">Send DMCA notices to our designated copyright agent:</p>
 			<div class="rounded-box border border-base-300 bg-base-200 px-6 py-4 text-sm space-y-1">
 				<p class="font-semibold">{$businessInfo.name} — Copyright Agent</p>
-					{#each $businessInfo.addresses.filter(a => a.isMailing) as addr}
-						<p class="opacity-70">{addr.street}, {addr.city}, {addr.state} {addr.zip}</p>
-					{/each}
-					<p><a href="mailto:legal@premoweb.com" class="link link-primary">legal@premoweb.com</a></p>
+				{#each $businessInfo.addresses.filter(a => a.isMailing) as addr}
+					<p class="opacity-70">{addr.street}, {addr.city}, {addr.state} {addr.zip}</p>
+				{/each}
+				<p><a href="mailto:legal@premoweb.com" class="link link-primary">legal@premoweb.com</a></p>
+			</div>
 			<p class="opacity-80 leading-relaxed">
 				If you believe your content was removed by mistake or misidentification, you may submit a counter-notification
 				to our copyright agent. Counter-notifications must include your contact details, identification of the removed

@@ -2,5 +2,8 @@
 	"files.associations": {
 		"*.css": "tailwindcss"
 	},
-	"workbench.tree.indent": 18
+	"workbench.tree.indent": 18,
+	"chat.tools.terminal.autoApprove": {
+		"timeout": true
+	}
 }

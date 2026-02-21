@@ -9,6 +9,9 @@ const hmrClientPort = parseInt(process.env.PORTLESS_PORT || '0') || (process.env
 
 export default defineConfig({
     plugins: [tailwindcss(), sveltekit(), sveltekitOG({ esmImport: false }), devtoolsJson()],
+    build: {
+        cssMinify: 'esbuild'
+    },
     server: {
         port,
         host: '0.0.0.0',
