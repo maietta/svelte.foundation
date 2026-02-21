@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy, tick } from 'svelte';
 	import { browser } from '$app/environment';
+	import '$lib/leaflet.css';
 
 	interface Props {
 		/** Full address string passed to Nominatim for geocoding, e.g. "464 Main St, Janesville, CA 96114" */
@@ -60,7 +61,8 @@
 			}
 		}
 
-		map = L.map(container, { scrollWheelZoom: false }).setView([lat, lon], zoom);
+		map = L.map(container, { scrollWheelZoom: false, attributionControl: true }).setView([lat, lon], zoom);
+		map.attributionControl.setPrefix('');
 
 		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -80,10 +82,6 @@
 		map = null;
 	});
 </script>
-
-<svelte:head>
-	<link rel="stylesheet" href="/leaflet/leaflet.css" />
-</svelte:head>
 
 <div class="osm-wrapper {className}" style="height: {height};">
 	{#if status === 'loading'}
@@ -119,5 +117,8 @@
 	}
 	.hidden {
 		visibility: hidden;
+	}
+	.osm-wrapper :global(.leaflet-attribution-flag) {
+		display: none;
 	}
 </style>
