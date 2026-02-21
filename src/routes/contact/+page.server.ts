@@ -83,7 +83,7 @@ export const actions: Actions = {
 			to: env.SENDGRID_TO_EMAIL,
 			from: {
 				email: env.SENDGRID_FROM_EMAIL,
-				name: name
+				name: businessName
 			},
 			replyTo: email,
 			subject: `New Contact Form Submission from ${name}`,
@@ -143,7 +143,7 @@ export const actions: Actions = {
 			await sgMail.send(msgToOwner);
 			await sgMail.send(msgAutoReply);
 		} catch (error: any) {
-			console.error('Email send error:', error);
+console.error('Email send error:', error, JSON.stringify(error?.response?.body));
 
 			// Parse SendGrid ResponseError shape
 			const statusCode: number = error?.response?.statusCode ?? error?.code ?? 0;
