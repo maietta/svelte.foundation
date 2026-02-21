@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ContactForm from '$lib/components/ContactForm.svelte';
+	import OpenStreetMap from '$lib/components/OpenStreetMap.svelte';
 	import { businessInfo } from '$lib/stores/business';
 
 	interface Props {
@@ -9,7 +10,17 @@
 		data?: Record<string, unknown>;
 	}
 
-	let { showInfo = true, showMap = false, form, data }: Props = $props();
+	let { showInfo = true, showMap = true, form, data }: Props = $props();
+
+	const physicalAddress = $derived(
+		$businessInfo.addresses?.find((a) => a.isPhysical) ?? $businessInfo.addresses?.[0]
+	);
+
+	const mapQuery = $derived(
+		physicalAddress
+			? `${physicalAddress.street}, ${physicalAddress.city}, ${physicalAddress.state} ${physicalAddress.zip}`
+			: ''
+	);
 </script>
 
 <div class="mx-auto w-full max-w-7xl px-6 py-16">
@@ -85,4 +96,12 @@
 		</div>
 
 	</div>
+
+	{#if showMap && mapQuery}
+		<div class="mt-12">
+			<h3 class="mb-3 text-xs font-semibold uppercase tracking-widest opacity-60">Find Us</h3>
+			<OpenStreetMap query={mapQuery} lat={physicalAddress?.lat} lon={physicalAddress?.lon} height="400px" />
+		</div>
+	{/if}
+
 </div>

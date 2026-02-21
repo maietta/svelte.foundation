@@ -5,6 +5,7 @@
 	"workbench.tree.indent": 18,
 	"chat.tools.terminal.autoApprove": {
 		"timeout": true,
-		"npx vite": true
+		"bunx vite": true,
+		"bun": true
 	}
 }

@@ -16,6 +16,9 @@ export interface Address {
 	isPhysical?: boolean;
 	walkIns?: boolean;
 	byAppointment?: boolean;
+	/** WGS-84 coordinates — used to pin the map without geocoding */
+	lat?: number;
+	lon?: number;
 }
 
 export interface BusinessInfo {
@@ -53,7 +56,9 @@ const defaultBusinessInfo: BusinessInfo = {
 			isPhysical: true,
 			isMailing: false,
 			walkIns: false,
-			byAppointment: true
+			byAppointment: true,
+			lat: 40.306160,
+			lon: -120.535942
 		},
 		{
 			name: 'Mailing Address',
