@@ -11,7 +11,11 @@
 	const userTimezone = browser ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'UTC';
 
 	let scrollY = $state(0);
-	let isScrolled = $derived(scrollY > 50);
+	let isScrolled = $state(false);
+	$effect(() => {
+		if (!isScrolled && scrollY > 80) isScrolled = true;
+		if (isScrolled && scrollY < 30) isScrolled = false;
+	});
 	let layoutDropdownOpen = $state(false);
 	let mobileMenuOpen = $state(false);
 	let mobileLayoutsOpen = $state(false);
@@ -161,29 +165,23 @@
 </script>
 
 <header class="sticky top-0 z-50">
-	<div
-		class="border-b border-base-300 bg-base-200 transition-all duration-300"
-		style="padding-top: {isScrolled ? '0.25rem' : '1rem'}; padding-bottom: {isScrolled ? '0.25rem' : '1rem'};"
-	>
-		<div class="mx-auto flex max-w-7xl items-center justify-between px-6">
-			<div>
-				<a href="/" class="text-xl font-bold text-base-content">
+	<div class="border-b border-base-300 bg-base-200">
+		<div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
+			<div class="flex flex-col justify-center">
+				<a href="/" class="text-xl font-bold text-base-content leading-tight">
 					{$businessInfo.name}
 				</a>
 				{#if $businessInfo.tagline}
-					<p
-						class="overflow-hidden text-sm transition-all duration-300"
-						style="max-height: {isScrolled ? '0' : '2rem'}; opacity: {isScrolled ? '0' : '0.6'}; margin-top: {isScrolled ? '0' : '0.25rem'};"
-					>
-						{$businessInfo.tagline}
-					</p>
+					<p class="overflow-hidden text-sm leading-tight transition-all duration-300"
+					   style="max-height: {isScrolled ? '0' : '2rem'}; opacity: {isScrolled ? '0' : '0.6'}; margin-top: {isScrolled ? '0' : '0.125rem'};"
+					>{$businessInfo.tagline}</p>
 				{/if}
 			</div>
-			<div class="flex items-center gap-4">
-				<div class="hidden flex-col items-end sm:flex">
-					<span class="text-xs opacity-60">Call Us Today</span>
-					<a href="tel:{$businessInfo.phone}" class="text-sm font-bold">{$businessInfo.phone}</a>
-				</div>
+			<div class="flex flex-col items-end justify-center">
+				<span class="overflow-hidden block text-xs leading-tight transition-all duration-300"
+				      style="max-height: {isScrolled ? '0' : '1.5rem'}; opacity: {isScrolled ? '0' : '0.6'}; margin-bottom: {isScrolled ? '0' : '0.125rem'};"
+				>Call Us Today</span>
+				<a href="tel:{$businessInfo.phone}" class="text-sm font-bold leading-tight">{$businessInfo.phone}</a>
 			</div>
 		</div>
 	</div>
