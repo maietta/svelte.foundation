@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { businessInfo } from '$lib/stores/business';
 	import { navigationItems } from '$lib/stores/navigation';
-	import { slide } from 'svelte/transition';
+	import { slide, fly, fade } from 'svelte/transition';
+	import { cubicOut } from 'svelte/easing';
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
 	import { page, navigating } from '$app/state';
@@ -12,6 +13,8 @@
 	let scrollY = $state(0);
 	let isScrolled = $derived(scrollY > 50);
 	let layoutDropdownOpen = $state(false);
+	let mobileMenuOpen = $state(false);
+	let mobileLayoutsOpen = $state(false);
 	const headerNavItems = $derived($navigationItems.filter((item) => item.showOnHeader));
 	// Use navigating.to during navigation so the indicator moves immediately on click,
 	// before the page transition finishes.
@@ -76,6 +79,24 @@
 	function closeLayoutDropdown() {
 		layoutDropdownOpen = false;
 	}
+
+	function openMobileMenu() {
+		mobileMenuOpen = true;
+	}
+
+	function closeMobileMenu() {
+		mobileMenuOpen = false;
+		mobileLayoutsOpen = false;
+	}
+
+	function toggleMobileLayouts() {
+		mobileLayoutsOpen = !mobileLayoutsOpen;
+	}
+
+	// Auto-close mobile menu when a navigation starts
+	$effect(() => {
+		if (navigating.to) closeMobileMenu();
+	});
 
 	function handleDocumentClick(event: MouseEvent) {
 		const target = event.target as Element;
@@ -173,48 +194,18 @@
 		class:py-2={!isScrolled}
 	>
 		<div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
-			<div class="flex items-center gab-4">
-				<div class="dropdown">
-					<div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class="h-5 w-5"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M4 6h16M4 12h8m-8 6h16"
-							/>
-						</svg>
-					</div>
-					<ul
-						tabindex="0"
-						role="menu"
-						class="dropdown-content menu z-1 mt-3 w-52 menu-sm rounded-box bg-base-100 p-2 shadow"
-					>
-						{#each headerNavItems as item}
-					<li><a href={item.href} class:menu-active={isActive(item.href)}>{item.label}</a></li>
-				{/each}
-					<li><a href="/" class:menu-active={page.url.pathname === '/'}>FrontPage</a></li>
-					<li><a href="/blog" class:menu-active={isActive('/blog')}>BlogIndex</a></li>
-					<li><a href="/blog/getting-started-with-sveltekit" class:menu-active={page.url.pathname === '/blog/getting-started-with-sveltekit'}>BlogPost</a></li>
-					<li><a href="/services" class:menu-active={isActive('/services')}>ServicesGrid</a></li>
-					<li><a href="/services/responsive-design-best-practices" class:menu-active={page.url.pathname === '/services/responsive-design-best-practices'}>SplitHero</a></li>
-					<li><a href="/about" class:menu-active={page.url.pathname === '/about'}>TwoColumn</a></li>
-					<li><a href="/contact" class:menu-active={page.url.pathname === '/contact'}>ContactPage</a></li>
-					<li><a href="/fullwidth" class:menu-active={page.url.pathname === '/fullwidth'}>FullWidth</a></li>
-					<li><a href="/pricing" class:menu-active={page.url.pathname === '/pricing'}>Pricing</a></li>
-					<li><a href="/team" class:menu-active={page.url.pathname === '/team'}>Team</a></li>
-					<li><a href="/faq" class:menu-active={page.url.pathname === '/faq'}>FAQ</a></li>
-					<li><a href="/portfolio" class:menu-active={page.url.pathname === '/portfolio'}>Portfolio</a></li>
-					<li><a href="/dashboard" class:menu-active={page.url.pathname === '/dashboard'}>Dashboard</a></li>
-					<li><a href="/timeline" class:menu-active={page.url.pathname === '/timeline'}>Timeline</a></li>
-					</ul>
-				</div>
+<div class="flex items-center gap-2">
+				<!-- Mobile hamburger -->
+				<button
+					type="button"
+					class="btn btn-ghost btn-sm lg:hidden"
+					aria-label="Open navigation menu"
+					onclick={openMobileMenu}
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
+					</svg>
+				</button>
 
 				<ul bind:this={navEl} class="nav-pill-host menu menu-horizontal hidden lg:flex pl-0 gap-1 relative">
 					<!-- sliding active indicator -->
@@ -482,6 +473,108 @@
 		</div><!-- /mega-menu-container -->
 		{/if}
 	</nav>
+
+	<!-- Mobile drawer -->
+	{#if mobileMenuOpen}
+		<!-- Backdrop -->
+		<div
+			class="fixed inset-0 z-50 bg-black/50"
+			transition:fade={{ duration: 200 }}
+			aria-hidden="true"
+			onclick={closeMobileMenu}
+		></div>
+
+		<!-- Slide-in panel -->
+		<div
+			class="fixed top-0 left-0 z-50 flex h-full w-80 max-w-[90vw] flex-col bg-base-100 shadow-2xl"
+			transition:fly={{ x: -320, duration: 300, easing: cubicOut }}
+			role="dialog"
+			aria-modal="true"
+			aria-label="Navigation"
+		>
+			<!-- Drawer header -->
+			<div class="flex items-center justify-between border-b border-base-300 px-4 py-4">
+				<a href="/" class="text-lg font-bold text-base-content" onclick={closeMobileMenu}>
+					{$businessInfo.name}
+				</a>
+				<button
+					type="button"
+					class="btn btn-ghost btn-sm btn-circle"
+					aria-label="Close menu"
+					onclick={closeMobileMenu}
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+					</svg>
+				</button>
+			</div>
+
+			<!-- Nav links -->
+			<nav class="flex-1 overflow-y-auto px-2 py-3">
+				<ul class="menu w-full p-0 gap-0.5">
+					{#each headerNavItems as item}
+						<li>
+							<a
+								href={item.href}
+								class:menu-active={isActive(item.href)}
+								onclick={closeMobileMenu}
+							>
+								{item.label}
+							</a>
+						</li>
+					{/each}
+
+					<!-- Layouts accordion -->
+					<li>
+						<button
+							type="button"
+							class="justify-between"
+							class:menu-active={isLayoutsActive}
+							onclick={toggleMobileLayouts}
+						>
+							Layouts
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								class="h-4 w-4 transition-transform"
+								class:rotate-180={mobileLayoutsOpen}
+								fill="none" viewBox="0 0 24 24" stroke="currentColor"
+							>
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+							</svg>
+						</button>
+						{#if mobileLayoutsOpen}
+							<ul transition:slide={{ duration: 200 }} class="pl-2">
+								<li><a href="/" class:menu-active={page.url.pathname === '/'} onclick={closeMobileMenu}>FrontPage</a></li>
+								<li><a href="/services/responsive-design-best-practices" class:menu-active={page.url.pathname === '/services/responsive-design-best-practices'} onclick={closeMobileMenu}>SplitHero</a></li>
+								<li><a href="/blog" class:menu-active={isActive('/blog')} onclick={closeMobileMenu}>BlogIndex</a></li>
+								<li><a href="/blog/getting-started-with-sveltekit" class:menu-active={page.url.pathname === '/blog/getting-started-with-sveltekit'} onclick={closeMobileMenu}>BlogPost</a></li>
+								<li><a href="/about" class:menu-active={page.url.pathname === '/about'} onclick={closeMobileMenu}>TwoColumn</a></li>
+								<li><a href="/fullwidth" class:menu-active={page.url.pathname === '/fullwidth'} onclick={closeMobileMenu}>FullWidth</a></li>
+								<li><a href="/services" class:menu-active={isActive('/services')} onclick={closeMobileMenu}>ServicesGrid</a></li>
+								<li><a href="/contact" class:menu-active={page.url.pathname === '/contact'} onclick={closeMobileMenu}>ContactPage</a></li>
+								<li><a href="/pricing" class:menu-active={page.url.pathname === '/pricing'} onclick={closeMobileMenu}>Pricing</a></li>
+								<li><a href="/team" class:menu-active={page.url.pathname === '/team'} onclick={closeMobileMenu}>Team</a></li>
+								<li><a href="/portfolio" class:menu-active={page.url.pathname === '/portfolio'} onclick={closeMobileMenu}>Portfolio</a></li>
+								<li><a href="/dashboard" class:menu-active={page.url.pathname === '/dashboard'} onclick={closeMobileMenu}>Dashboard</a></li>
+								<li><a href="/timeline" class:menu-active={page.url.pathname === '/timeline'} onclick={closeMobileMenu}>Timeline</a></li>
+							</ul>
+						{/if}
+					</li>
+
+					<li>
+						<a href="/faq" class:menu-active={isActive('/faq')} onclick={closeMobileMenu}>FAQ</a>
+					</li>
+				</ul>
+			</nav>
+
+			<!-- Drawer footer -->
+			<div class="border-t border-base-300 px-4 py-4">
+				<p class="text-xs opacity-60">Call Us Today</p>
+				<a href="tel:{$businessInfo.phone}" class="font-bold text-base-content">{$businessInfo.phone}</a>
+				<p class="mt-2 text-xs opacity-60">Hours: {getTodayHours()}</p>
+			</div>
+		</div>
+	{/if}
 
 </header>
 
