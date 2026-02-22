@@ -81,17 +81,21 @@ $effect(() => {
 		</div>
 	</div>
 
-	<!-- Bottom bar: copyright left, powered-by right -->
+	<!-- Bottom bar -->
 	<div class="w-full border-t border-base-300 bg-base-200">
-		<div class="mx-auto w-full max-w-7xl px-6 py-3 flex items-center justify-between text-sm">
-			<div class="flex items-center gap-4">
-				<span>© {currentYear} {$businessInfo.name}. All rights reserved.</span>
-				<a href="/dmca" class="link link-hover opacity-60">DMCA</a>
-				<a href="/ccpa" class="link link-hover opacity-60">CCPA</a>
-				<a href="/gdpr" class="link link-hover opacity-60">GDPR</a>
-				<a href="/accessibility" class="link link-hover opacity-60">Accessibility</a>
+		<div class="mx-auto w-full max-w-7xl px-6 py-4 flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between sm:py-3 sm:gap-0">
+			<!-- Copyright + legal links -->
+			<div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+				<span class="opacity-80">© {currentYear} {$businessInfo.name}. All rights reserved.</span>
+				<div class="flex flex-wrap gap-x-3 gap-y-1 opacity-60">
+					<a href="/dmca" class="link link-hover">DMCA</a>
+					<a href="/ccpa" class="link link-hover">CCPA</a>
+					<a href="/gdpr" class="link link-hover">GDPR</a>
+					<a href="/accessibility" class="link link-hover">Accessibility</a>
+				</div>
 			</div>
-			<div>
+			<!-- Powered by -->
+			<div class="opacity-60 sm:opacity-100">
 				<a href={poweredByHref} target="_blank" rel="noopener noreferrer" class="link link-hover">
 					Powered by PremoWeb LLC
 				</a>
